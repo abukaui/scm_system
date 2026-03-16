@@ -9,7 +9,7 @@ const StudentDashboard: React.FC = () => {
     const [complaints, setComplaints] = useState<ComplaintResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState<ComplaintData>({ title: '', description: '', catagory: 'Academic' });
+    const [formData, setFormData] = useState<ComplaintData>({ title: '', description: '', category: 'Academic', catagory: '' });
 
 
     useEffect(() => {
@@ -49,7 +49,7 @@ const StudentDashboard: React.FC = () => {
             const data = await createComplaint(formData, token);
             setComplaints([data.compliant, ...complaints]);
             setShowForm(false);
-            setFormData({ title: '', description: '', catagory: 'Academic' });
+            setFormData({ title: '', description: '', catagory: 'Academic', category: '' });
             alert("Complaint submitted successfully!");
         } catch (error) {
             console.error(error);
@@ -185,20 +185,21 @@ const StudentDashboard: React.FC = () => {
                                     <form onSubmit={handleCreateComplaint} className="space-y-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                                            <input type="text" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Brief summary of the issue" />
+                                            <input type="text" required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Brief summary of the issue" />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                            <select value={formData.catagory} onChange={e => setFormData({...formData, catagory: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500">
+                                            <select value={formData.catagory} onChange={e => setFormData({ ...formData, catagory: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500">
                                                 <option value="Academic">Academic</option>
                                                 <option value="Administrative">Administrative</option>
                                                 <option value="Facilities">Facilities</option>
                                                 <option value="Other">Other</option>
                                             </select>
+                                            <input type="text" value={formData.catagory} onChange={e => setFormData({ ...formData, catagory: e.target.value })} />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                            <textarea required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500" rows={4} placeholder="Detailed description of your complaint..."></textarea>
+                                            <textarea required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500" rows={4} placeholder="Detailed description of your complaint..."></textarea>
                                         </div>
                                         <button type="submit" className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transition-all">Submit Complaint</button>
                                     </form>

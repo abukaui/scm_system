@@ -63,6 +63,7 @@ export const loginStudent = async (data: studentData): Promise<LoginResponse | u
 export interface ComplaintData {
     title: string;
     description: string;
+    category: string;
     catagory: string; // Matching backend spelling
 }
 
@@ -98,7 +99,7 @@ export const createComplaint = async (data: ComplaintData, token: string) => {
     }
 }
 
-export const getComplaints = async (token: string): Promise<{compliant: ComplaintResponse[]}> => {
+export const getComplaints = async (token: string): Promise<{ compliant: ComplaintResponse[] }> => {
     try {
         const response = await fetch(`${API}/compliant`, {
             method: 'GET',
