@@ -10,12 +10,14 @@ export const authMiddleware = async (req:Request ,res:Response, next:NextFunctio
           }
                  
           const token = authuser.split(" ")[1];
-          console.log(`token is ${token}`)
+          // console.log(`token is ${token}`)
           const decoded = Jwt.verify(token, process.env.JWT_SECRET as string);
 
            (req as any).user = decoded
+           next();
 
       } catch (error) {
-        console.log(`user  is not authoroized  ${error}`)
+        console.log(`user is not authorized: ${error}`)
+        res.status(401).json({ message: "Invalid or expired token" });
       }
 }

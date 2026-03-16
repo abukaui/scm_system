@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { type studentData } from '../../service/api';
+import { type studentData, getComplaints, createComplaint, type ComplaintResponse, type ComplaintData } from '../../service/api';
 
 const StudentDashboard: React.FC = () => {
     const navigate = useNavigate();
     const [student, setStudent] = useState<studentData | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [complaints, setComplaints] = useState<ComplaintResponse[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [showForm, setShowForm] = useState(false);
+    const [formData, setFormData] = useState<ComplaintData>({ title: '', description: '', catagory: 'Academic' });
+
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -19,7 +24,38 @@ const StudentDashboard: React.FC = () => {
         if (studentDataStr) {
             setStudent(JSON.parse(studentDataStr));
         }
+
+        fetchComplaints(token);
     }, [navigate]);
+
+    const fetchComplaints = async (token: string) => {
+        try {
+            setIsLoading(true);
+            const data = await getComplaints(token);
+            setComplaints(data.compliant || []);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleCreateComplaint = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const data = await createComplaint(formData, token);
+            setComplaints([data.compliant, ...complaints]);
+            setShowForm(false);
+            setFormData({ title: '', description: '', catagory: 'Academic' });
+            alert("Complaint submitted successfully!");
+        } catch (error) {
+            console.error(error);
+            alert("Failed to submit complaint.");
+        }
+    };
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -111,10 +147,10 @@ const StudentDashboard: React.FC = () => {
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <StatCard title="Total Complaints" value="0" color="blue" />
+                        <StatCard title="Total Complaints" value={complaints.length.toString()} color="blue" />
                         <StatCard title="In Progress" value="0" color="orange" />
                         <StatCard title="Resolved" value="0" color="green" />
-                        <StatCard title="Pending Review" value="0" color="purple" />
+                        <StatCard title="Pending Review" value={complaints.length.toString()} color="purple" />
                     </div>
 
                     {/* Main Grid */}
@@ -138,26 +174,76 @@ const StudentDashboard: React.FC = () => {
                             </button>
                         </div>
 
-                        {/* Recent Activity */}
+                        {/* Recent Activity or Form */}
                         <div className="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                            <div className="flex items-center justify-between mb-8">
-                                <h4 className="text-lg font-bold text-gray-900">Recent Complaints</h4>
-                                <Link to="#" className="text-blue-600 font-bold hover:underline">View All</Link>
-                            </div>
-
-                            {/* Empty State */}
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                                    <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
+                            {showForm ? (
+                                <div>
+                                    <div className="flex items-center justify-between mb-8">
+                                        <h4 className="text-lg font-bold text-gray-900">New Complaint</h4>
+                                        <button onClick={() => setShowForm(false)} className="text-gray-500 hover:text-gray-700 font-medium">Cancel</button>
+                                    </div>
+                                    <form onSubmit={handleCreateComplaint} className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                                            <input type="text" required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500" placeholder="Brief summary of the issue" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                            <select value={formData.catagory} onChange={e => setFormData({...formData, catagory: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500">
+                                                <option value="Academic">Academic</option>
+                                                <option value="Administrative">Administrative</option>
+                                                <option value="Facilities">Facilities</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                            <textarea required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500" rows={4} placeholder="Detailed description of your complaint..."></textarea>
+                                        </div>
+                                        <button type="submit" className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transition-all">Submit Complaint</button>
+                                    </form>
                                 </div>
-                                <h5 className="text-gray-900 font-bold mb-1">No complaints found</h5>
-                                <p className="text-gray-500 text-sm max-w-xs mb-6">You haven't submitted any complaints yet. Your history will appear here.</p>
-                                <button className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transition-all">
-                                    New Complaint
-                                </button>
-                            </div>
+                            ) : (
+                                <div>
+                                    <div className="flex items-center justify-between mb-8">
+                                        <h4 className="text-lg font-bold text-gray-900">Recent Complaints</h4>
+                                        <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-blue-50 text-blue-600 font-bold rounded-lg hover:bg-blue-100 transition-colors">New Complaint</button>
+                                    </div>
+
+                                    {isLoading ? (
+                                        <p className="text-center text-gray-500 py-8">Loading complaints...</p>
+                                    ) : complaints.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                                <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </div>
+                                            <h5 className="text-gray-900 font-bold mb-1">No complaints found</h5>
+                                            <p className="text-gray-500 text-sm max-w-xs mb-6">You haven't submitted any complaints yet. Your history will appear here.</p>
+                                            <button onClick={() => setShowForm(true)} className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transition-all">
+                                                New Complaint
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {complaints.map((c) => (
+                                                <div key={c.id} className="p-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-colors">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <h5 className="font-bold text-gray-900">{c.title}</h5>
+                                                        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">{c.catagory}</span>
+                                                    </div>
+                                                    <p className="text-sm text-gray-600 mb-3">{c.description}</p>
+                                                    <div className="flex justify-between items-center text-xs text-gray-500">
+                                                        <span>{new Date(c.created_at || Date.now()).toLocaleDateString()}</span>
+                                                        <span className="font-medium text-orange-600">Pending Review</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

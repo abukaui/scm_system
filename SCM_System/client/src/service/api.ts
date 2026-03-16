@@ -59,3 +59,61 @@ export const loginStudent = async (data: studentData): Promise<LoginResponse | u
         return undefined
     }
 }
+
+export interface ComplaintData {
+    title: string;
+    description: string;
+    catagory: string; // Matching backend spelling
+}
+
+export interface ComplaintResponse {
+    id: number;
+    studentid: string;
+    title: string;
+    description: string;
+    catagory: string;
+    status: string;
+    created_at: string;
+}
+
+export const createComplaint = async (data: ComplaintData, token: string) => {
+    try {
+        const response = await fetch(`${API}/compliant`, {
+            method: 'POST',
+            headers: {
+                "content-type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to create complaint');
+        }
+        return result;
+    } catch (error) {
+        console.error('Error creating complaint:', error);
+        throw error;
+    }
+}
+
+export const getComplaints = async (token: string): Promise<{compliant: ComplaintResponse[]}> => {
+    try {
+        const response = await fetch(`${API}/compliant`, {
+            method: 'GET',
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to fetch complaints');
+        }
+        return result;
+    } catch (error) {
+        console.error('Error fetching complaints:', error);
+        throw error;
+    }
+}

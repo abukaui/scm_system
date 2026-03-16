@@ -8,7 +8,7 @@ export const compliatCreate = async (req:any, res: Response)=>{
               const studentID = req.user.id;
          const result = await pool.query(`
                INSERT INTO compliants(studentid,title,description,catagory)
-               values($1,$2,$3,$4) RETURING * 
+               values($1,$2,$3,$4) RETURNING * 
 
             `, [studentID,title,description,catagory])
                
