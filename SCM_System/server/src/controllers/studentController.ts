@@ -25,11 +25,18 @@ export const registerStudent = async (req: Request, res: Response) => {
             student: result.rows[0]
         });
 
-    } catch (error) {
-        console.error(error); // Always log the error for debugging!
-        res.status(500).json({
-            message: 'Server error'
-        });
+    } catch (error: any) {
+        console.error(error);
+
+        // Postgres unique constraint violation code: 23505
+        if (error.code === '23505') {
+            const field = error.constraint?.includes('email') ? 'Email' : 'Student ID';
+            return res.status(409).json({
+                message: `${field} is already registered. Please use a different one.`
+            });
+        }
+
+        res.status(500).json({ message: 'Server error' });
     }
 }
 
@@ -41,8 +48,8 @@ export const loginStudent = async (req:Request , res:Response)=>{
         const student = await pool.query('SELECT  * FROM students WHERE email = $1' ,[email]);
 
           if (student.rows.length===0){
-              res.status(404).json({
-                message:'student is not found'
+              return res.status(404).json({
+                message:'Student not found'
               })
           }
 

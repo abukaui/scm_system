@@ -9,7 +9,7 @@ const StudentDashboard: React.FC = () => {
     const [complaints, setComplaints] = useState<ComplaintResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState<ComplaintData>({ title: '', description: '', category: 'Academic', catagory: '' });
+    const [formData, setFormData] = useState<ComplaintData>({ title: '', description: '', category: 'Academic' });
 
 
     useEffect(() => {
@@ -49,7 +49,7 @@ const StudentDashboard: React.FC = () => {
             const data = await createComplaint(formData, token);
             setComplaints([data.compliant, ...complaints]);
             setShowForm(false);
-            setFormData({ title: '', description: '', catagory: 'Academic', category: '' });
+            setFormData({ title: '', description: '', category: 'Academic' });
             alert("Complaint submitted successfully!");
         } catch (error) {
             console.error(error);
@@ -189,13 +189,12 @@ const StudentDashboard: React.FC = () => {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                            <select value={formData.catagory} onChange={e => setFormData({ ...formData, catagory: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500">
+                                            <select value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500">
                                                 <option value="Academic">Academic</option>
                                                 <option value="Administrative">Administrative</option>
                                                 <option value="Facilities">Facilities</option>
                                                 <option value="Other">Other</option>
                                             </select>
-                                            <input type="text" value={formData.catagory} onChange={e => setFormData({ ...formData, catagory: e.target.value })} />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -232,7 +231,7 @@ const StudentDashboard: React.FC = () => {
                                                 <div key={c.id} className="p-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-colors">
                                                     <div className="flex justify-between items-start mb-2">
                                                         <h5 className="font-bold text-gray-900">{c.title}</h5>
-                                                        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">{c.catagory}</span>
+                                                        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">{c.category}</span>
                                                     </div>
                                                     <p className="text-sm text-gray-600 mb-3">{c.description}</p>
                                                     <div className="flex justify-between items-center text-xs text-gray-500">

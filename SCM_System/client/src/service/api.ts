@@ -64,7 +64,6 @@ export interface ComplaintData {
     title: string;
     description: string;
     category: string;
-    catagory: string; // Matching backend spelling
 }
 
 export interface ComplaintResponse {
@@ -72,7 +71,7 @@ export interface ComplaintResponse {
     studentid: string;
     title: string;
     description: string;
-    catagory: string;
+    category: string;
     status: string;
     created_at: string;
 }
