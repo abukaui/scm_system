@@ -120,3 +120,57 @@ export const getComplaints = async (token: string): Promise<{ compliant: Complai
         throw error;
     }
 }
+
+// Admin API
+export const adminGetAllComplaints = async (token: string) => {
+    try {
+        const response = await fetch(`${API}/admin/complaints`, {
+            method: 'GET',
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || 'Failed to fetch admin complaints');
+        return result;
+    } catch (error) {
+        console.error('Error fetching admin complaints:', error);
+        throw error;
+    }
+};
+
+export const adminGetAllStudents = async (token: string) => {
+    try {
+        const response = await fetch(`${API}/admin/students`, {
+            method: 'GET',
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || 'Failed to fetch admin students');
+        return result;
+    } catch (error) {
+        console.error('Error fetching admin students:', error);
+        throw error;
+    }
+};
+
+export const adminUpdateComplaintStatus = async (id: number, status: string, token: string) => {
+    try {
+        const response = await fetch(`${API}/admin/complaints/${id}/status`, {
+            method: 'PATCH',
+            headers: {
+                "content-type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ status })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || 'Failed to update status');
+        return result;
+    } catch (error) {
+        console.error('Error updating status:', error);
+        throw error;
+    }
+};

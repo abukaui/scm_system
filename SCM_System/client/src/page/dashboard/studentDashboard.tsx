@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { type studentData, getComplaints, createComplaint, type ComplaintResponse, type ComplaintData } from '../../service/api';
+import { type UserData, getComplaints, createComplaint, type ComplaintResponse, type ComplaintData } from '../../service/api';
 
 const StudentDashboard: React.FC = () => {
     const navigate = useNavigate();
-    const [student, setStudent] = useState<studentData | null>(null);
+    const [student, setStudent] = useState<UserData | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [complaints, setComplaints] = useState<ComplaintResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -14,16 +14,15 @@ const StudentDashboard: React.FC = () => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const studentDataStr = localStorage.getItem('student');
+        const userDataStr = localStorage.getItem('user');
 
         if (!token) {
             navigate('/login');
             return;
         }
-        
 
-        if (studentDataStr) {
-            setStudent(JSON.parse(studentDataStr));
+        if (userDataStr) {
+            setStudent(JSON.parse(userDataStr));
         }
 
         fetchComplaints(token);
@@ -60,7 +59,8 @@ const StudentDashboard: React.FC = () => {
 
     const handleLogout = () => {
         localStorage.removeItem('token');
-        localStorage.removeItem('student');
+        localStorage.removeItem('user');
+        localStorage.removeItem('role');
         navigate('/login');
     };
 
@@ -149,9 +149,9 @@ const StudentDashboard: React.FC = () => {
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <StatCard title="Total Complaints" value={complaints.length.toString()} color="blue" />
-                        <StatCard title="In Progress" value="0" color="orange" />
-                        <StatCard title="Resolved" value="0" color="green" />
-                        <StatCard title="Pending Review" value={complaints.length.toString()} color="purple" />
+                        <StatCard title="In Progress" value={complaints.filter(c => c.status === 'In Progress').length.toString()} color="orange" />
+                        <StatCard title="Resolved" value={complaints.filter(c => c.status === 'Resolved').length.toString()} color="green" />
+                        <StatCard title="Pending Review" value={complaints.filter(c => c.status === 'Pending').length.toString()} color="purple" />
                     </div>
 
                     {/* Main Grid */}
@@ -229,15 +229,24 @@ const StudentDashboard: React.FC = () => {
                                     ) : (
                                         <div className="space-y-4">
                                             {complaints.map((c) => (
-                                                <div key={c.id} className="p-4 border border-gray-100 rounded-2xl hover:bg-gray-50 transition-colors">
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <h5 className="font-bold text-gray-900">{c.title}</h5>
-                                                        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">{c.category}</span>
+                                                <div key={c.id} className="p-5 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all group">
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <div>
+                                                            <h5 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors uppercase text-xs tracking-tight">{c.title}</h5>
+                                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{c.category}</p>
+                                                        </div>
+                                                        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${
+                                                            c.status === 'Resolved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
+                                                            c.status === 'In Progress' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
+                                                            'bg-amber-50 text-amber-600 border-amber-100'
+                                                        }`}>
+                                                            {c.status || 'Pending'}
+                                                        </div>
                                                     </div>
-                                                    <p className="text-sm text-gray-600 mb-3">{c.description}</p>
-                                                    <div className="flex justify-between items-center text-xs text-gray-500">
-                                                        <span>{new Date(c.created_at || Date.now()).toLocaleDateString()}</span>
-                                                        <span className="font-medium text-orange-600">Pending Review</span>
+                                                    <p className="text-sm text-slate-600 mb-4 line-clamp-2 italic">"{c.description}"</p>
+                                                    <div className="flex justify-between items-center pt-3 border-t border-slate-50">
+                                                        <span className="text-[10px] text-slate-400 font-bold">{new Date(c.created_at).toLocaleDateString()}</span>
+                                                        <button className="text-[10px] font-black text-blue-600 hover:underline uppercase tracking-widest leading-none">View Details</button>
                                                     </div>
                                                 </div>
                                             ))}
