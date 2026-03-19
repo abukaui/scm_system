@@ -5,6 +5,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import {pool} from "../db/config"; // Assuming this is your pool location
 import jwt from "jsonwebtoken";
+import { sendWelcomeEmail } from "../service/emailService";
 
 export const registerStudent = async (req: Request, res: Response) => {
     try {
@@ -19,10 +20,17 @@ export const registerStudent = async (req: Request, res: Response) => {
             [name, email, department, studentID, hashedPassword, 'student']
         );
 
-        // 3. Return the FIRST row of the result
+        const newStudent = result.rows[0];
+
+        // 3. Send Welcome Email (async, don't block response)
+        sendWelcomeEmail(newStudent.email, newStudent.name).catch(err => {
+            console.error('Failed to send welcome email:', err);
+        });
+
+        // 4. Return the result
         res.status(201).json({
             message: 'Student registered successfully',
-            student: result.rows[0]
+            student: newStudent
         });
 
     } catch (error: any) {
