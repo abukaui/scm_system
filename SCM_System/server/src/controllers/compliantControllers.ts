@@ -5,12 +5,12 @@ export const compliatCreate = async (req: any, res: Response) => {
     try {
         const { title, description, category } = req.body;
 
-        const studentID = req.user.id;
+        const userId = req.user.id;
         const result = await pool.query(`
-               INSERT INTO complaints (studentid,title,description,category)
+               INSERT INTO complaints (user_id, title, description, category)
                values($1,$2,$3,$4) RETURNING * 
 
-            `, [studentID, title, description, category])
+            `, [userId, title, description, category])
 
         res.status(201).json({
             message: "compliant created successecfuly",
@@ -30,9 +30,9 @@ export const compliatCreate = async (req: any, res: Response) => {
 export const getCompliant = async (req: any, res: Response) => {
 
     try {
-        const studentID = req.user.id;
+        const userId = req.user.id;
 
-        const result = await pool.query("SELECT * FROM complaints WHERE studentid = $1 ORDER BY created_at DESC ", [studentID])
+        const result = await pool.query("SELECT * FROM complaints WHERE user_id = $1 ORDER BY created_at DESC ", [userId])
         res.json({ compliant: result.rows })
 
 

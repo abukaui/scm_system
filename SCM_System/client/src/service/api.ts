@@ -1,14 +1,16 @@
 const API = "http://localhost:3000/api";
 
-export interface studentData {
+export interface UserData {
+    id?: number;
     name?: string;
     email: string;
     password?: string;
     department?: string;
     studentID?: string;
+    role?: string;
 }
 
-export const registerStudent = async (data: studentData) => {
+export const registerStudent = async (data: UserData) => {
     try {
         const response = await fetch(`${API}/register`, {
             method: 'POST',
@@ -35,10 +37,10 @@ export const registerStudent = async (data: studentData) => {
 export interface LoginResponse {
     token?: string;
     message?: string;
-    student?: studentData;
+    user?: UserData;
 }
 
-export const loginStudent = async (data: studentData): Promise<LoginResponse | undefined> => {
+export const loginUser = async (data: UserData): Promise<LoginResponse | undefined> => {
     try {
         const response = await fetch(`${API}/login`, {
             method: 'POST',
@@ -50,7 +52,7 @@ export const loginStudent = async (data: studentData): Promise<LoginResponse | u
 
         const result = (await response.json()) as LoginResponse
         console.log('Login result:', result)
-        console.log(result.student)
+        console.log(result.user)
 
         return result
 
@@ -112,6 +114,7 @@ export const getComplaints = async (token: string): Promise<{ compliant: Complai
             throw new Error(result.message || 'Failed to fetch complaints');
         }
         return result;
+
     } catch (error) {
         console.error('Error fetching complaints:', error);
         throw error;

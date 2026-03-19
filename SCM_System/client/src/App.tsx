@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Login from "./page/Login";
 import Register from "./page/Register";
 import StudentDashboard from "./page/dashboard/studentDashboard";
-import AdminDashboard from "./page/dashboard/AdminDashboard";
+import AdminDashboard from "./page/dashboard/admin/AdminDashboard";
 import LandingPage from "./page/Landing";
 
 /** Redirects to /login if no token in localStorage */
@@ -11,10 +11,11 @@ const ProtectedRoute = ({ element }: { element: React.ReactElement }) => {
   return token ? element : <Navigate to="/login" replace />;
 };
 
-/** Redirects to /admin if adminToken exists, else to /login */
+/** Redirects to /admin if admin role exists, else to /login */
 const AdminRoute = ({ element }: { element: React.ReactElement }) => {
-  const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
-  return token ? element : <Navigate to="/login" replace />;
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  return (token && role === "admin") ? element : <Navigate to="/login" replace />;
 };
 
 function App() {

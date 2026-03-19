@@ -1,10 +1,9 @@
 import express from "express";
-import { loginStudent, registerStudent } from "../controllers/studentController";
-
+import { login, registerStudent } from "../controllers/studentController";
 
 const route = express.Router();
 
-route.post('/register',registerStudent)
-route.post('/login',loginStudent)
+route.post('/register', registerStudent)
+route.post('/login', login)
 
 export default route;

@@ -15,10 +15,14 @@ const Navbar: React.FC = () => {
     }, []);
 
     const isLoggedIn = !!localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    const dashboardLink = role === 'admin' ? '/admin' : '/dashboard';
 
     const handleLogout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
         localStorage.removeItem('student');
+        localStorage.removeItem('role');
         navigate('/login');
     };
 
@@ -43,7 +47,7 @@ const Navbar: React.FC = () => {
                     
                     {isLoggedIn ? (
                         <div className="flex items-center space-x-4">
-                            <Link to="/dashboard" className="text-blue-600 font-semibold hover:text-blue-700">Dashboard</Link>
+                            <Link to={dashboardLink} className="text-blue-600 font-semibold hover:text-blue-700">Dashboard</Link>
                             <button 
                                 onClick={handleLogout}
                                 className="bg-gray-100 text-gray-700 px-5 py-2 rounded-lg font-medium hover:bg-gray-200 transition-all"
@@ -88,7 +92,7 @@ const Navbar: React.FC = () => {
                     <div className="pt-4 border-t border-gray-100 flex flex-col space-y-4">
                         {isLoggedIn ? (
                             <>
-                                <Link to="/dashboard" className="text-blue-600 font-semibold">Dashboard</Link>
+                                <Link to={dashboardLink} className="text-blue-600 font-semibold">Dashboard</Link>
                                 <button onClick={handleLogout} className="text-left text-gray-600 font-medium">Logout</button>
                             </>
                         ) : (

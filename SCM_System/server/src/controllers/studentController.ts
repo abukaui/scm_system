@@ -13,10 +13,10 @@ export const registerStudent = async (req: Request, res: Response) => {
         // 1. Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // 2. Insert into Database
+        // 2. Insert into Database (using the new users table)
         const result = await pool.query(
-            'INSERT INTO students(name, email, department, "studentID", password) VALUES($1, $2, $3, $4, $5) RETURNING id, name, email, department, "studentID"',
-            [name, email, department, studentID, hashedPassword]
+            'INSERT INTO users(name, email, department, "studentID", password, role) VALUES($1, $2, $3, $4, $5, $6) RETURNING id, name, email, department, "studentID", role',
+            [name, email, department, studentID, hashedPassword, 'student']
         );
 
         // 3. Return the FIRST row of the result
@@ -41,19 +41,20 @@ export const registerStudent = async (req: Request, res: Response) => {
 }
 
 
-export const loginStudent = async (req:Request , res:Response)=>{
+export const login = async (req:Request , res:Response)=>{
     try {
         const {email,password} = req.body;
 
-        const student = await pool.query('SELECT  * FROM students WHERE email = $1' ,[email]);
+        const userResult = await pool.query('SELECT * FROM users WHERE email = $1' ,[email]);
 
-          if (student.rows.length===0){
+          if (userResult.rows.length===0){
               return res.status(404).json({
-                message:'Student not found'
+                message:'User not found'
               })
           }
 
-         const isValidPassword = await bcrypt.compare(password, student.rows[0].password);
+         const user = userResult.rows[0];
+         const isValidPassword = await bcrypt.compare(password, user.password);
 
          if(!isValidPassword){
             return res.status(401).json({
@@ -62,17 +63,17 @@ export const loginStudent = async (req:Request , res:Response)=>{
          }
           
          const token = jwt.sign(
-             {id:student.rows[0].id} ,
+             {id: user.id, role: user.role} ,
              process.env.JWT_SECRET as string,
              {expiresIn:"1h"}
          )
 
-         const { password: _, ...studentData } = student.rows[0];
+         const { password: _, ...userData } = user;
 
          res.status(200).json({
             message:'login successful',
             token,
-            student: studentData
+            user: userData
          })
 
     } catch (error) {
@@ -81,4 +82,4 @@ export const loginStudent = async (req:Request , res:Response)=>{
             message:'server error'
         })
     }
-}
+}

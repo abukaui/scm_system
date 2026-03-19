@@ -20,6 +20,7 @@ const StudentDashboard: React.FC = () => {
             navigate('/login');
             return;
         }
+        
 
         if (studentDataStr) {
             setStudent(JSON.parse(studentDataStr));
@@ -80,7 +81,7 @@ const StudentDashboard: React.FC = () => {
 
                 <nav className="flex-1 mt-8 px-4 space-y-2">
                     <DashboardLink to="/dashboard" icon={<DashboardIcon />} active={true} collapsed={!sidebarOpen}>Overview</DashboardLink>
-                    <DashboardLink to="#" icon={<ComplaintsIcon />} collapsed={!sidebarOpen}>My Complaints</DashboardLink>
+                    <DashboardLink to="/complaints" icon={<ComplaintsIcon />} collapsed={!sidebarOpen}>My Complaints</DashboardLink>
                     <DashboardLink to="#" icon={<ProfileIcon />} collapsed={!sidebarOpen}>Profile Settings</DashboardLink>
                 </nav>
 
@@ -137,7 +138,7 @@ const StudentDashboard: React.FC = () => {
                         <div className="relative z-10">
                             <h3 className="text-2xl font-bold mb-2">Welcome back, {student.name}! 👋</h3>
                             <p className="text-blue-100 max-w-xl">
-                                Here's what's happening with your complaints and requests today. Track and manage everything in one place.
+                                Here's what's happening with your complaints  Track and manage everything in one place.
                             </p>
                         </div>
                         <svg className="absolute right-0 bottom-0 w-64 h-64 text-white/10 -mr-16 -mb-16" fill="currentColor" viewBox="0 0 24 24">
@@ -193,7 +194,7 @@ const StudentDashboard: React.FC = () => {
                                                 <option value="Academic">Academic</option>
                                                 <option value="Administrative">Administrative</option>
                                                 <option value="Facilities">Facilities</option>
-                                                <option value="Other">Other</option>
+                                                <option value="Other">department head</option>
                                             </select>
                                         </div>
                                         <div>

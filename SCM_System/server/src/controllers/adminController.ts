@@ -8,7 +8,7 @@ export const loginAdmin = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
 
-        const result = await pool.query("SELECT * FROM admins WHERE email = $1", [email]);
+        const result = await pool.query("SELECT * FROM users WHERE email = $1 AND role = 'admin'", [email]);
         if (result.rows.length === 0) {
             res.status(404).json({ message: "Admin not found" });
             return;
@@ -42,9 +42,10 @@ export const getAllComplaints = async (req: Request, res: Response) => {
         const result = await pool.query(`
             SELECT 
                 c.id, c.title, c.description, c.category, c.status, c.created_at,
-                s.name AS student_name, s.email AS student_email, s."studentID", s.department
+                u.name AS student_name, u.email AS student_email, u."studentID", u.department
             FROM complaints c
-            JOIN students s ON c.studentid = s.id
+            JOIN users u ON c.user_id = u.id
+            WHERE u.role = 'student'
             ORDER BY c.created_at DESC
         `);
         res.json({ complaints: result.rows });
@@ -88,7 +89,7 @@ export const getAllStudents = async (req: Request, res: Response) => {
     try {
         const result = await pool.query(
             `SELECT id, name, email, department, "studentID", created_at 
-             FROM students ORDER BY created_at DESC`
+             FROM users WHERE role = 'student' ORDER BY created_at DESC`
         );
         res.json({ students: result.rows });
     } catch (error) {

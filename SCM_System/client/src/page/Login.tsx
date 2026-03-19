@@ -1,16 +1,11 @@
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginStudent } from "../service/api";
-
-interface loginData {
-    email: string;
-    password: string;
-}
+import { loginUser } from "../service/api";
 
 const Login = () => {
     const navigate = useNavigate();
 
-    const [formData, setFormData] = useState<loginData>({
+    const [formData, setFormData] = useState({
         email: "",
         password: ""
     })
@@ -21,15 +16,22 @@ const Login = () => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const response = await loginStudent(formData);
+            const response = await loginUser(formData);
 
             if (response?.token) {
                 localStorage.setItem("token", response.token);
-                // Optionally store student data
-                if (response.student) {
-                    localStorage.setItem("student", JSON.stringify(response.student));
+                // Store user data and role
+                if (response.user) {
+                    localStorage.setItem("user", JSON.stringify(response.user));
+                    localStorage.setItem("role", response.user.role || "");
+                    
+                    // Role-based redirection
+                    if (response.user.role === 'admin') {
+                        navigate("/admin");
+                    } else {
+                        navigate("/dashboard");
+                    }
                 }
-                navigate("/dashboard");
                 return;
             }
 
@@ -45,7 +47,7 @@ const Login = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50">
-               
+
             <div className="bg-white p-8 rounded-lg shadow-md w-96">
                 <form onSubmit={handleSubmit}>
                     <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">Login</h2>
