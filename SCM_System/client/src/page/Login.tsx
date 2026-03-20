@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../service/api";
+import toast from "react-hot-toast";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -37,10 +38,14 @@ const Login = () => {
             }
 
             const message = response?.message ?? "Login failed. Please check your credentials.";
-            alert(message);
+            if (message) {
+                toast.error(message);
+            } else {
+                toast.error("Login failed. Please try again later.");
+            }
         } catch (error) {
             console.error(`Login failed: ${error}`);
-            alert("Login failed. Please try again later.");
+            toast.error("Login failed. Please try again later.");
         } finally {
             setIsLoading(false);
         }

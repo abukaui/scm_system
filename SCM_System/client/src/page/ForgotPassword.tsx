@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { requestPasswordReset } from '../service/api';
+import toast from 'react-hot-toast';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -15,7 +16,7 @@ const ForgotPassword = () => {
             setIsSubmitted(true);
         } catch (error: any) {
             console.error("Failed to request password reset:", error);
-            alert(error.message || "Something went wrong. Please try again.");
+            toast.error(error.message || "Something went wrong. Please try again.");
         } finally {
             setIsLoading(false);
         }

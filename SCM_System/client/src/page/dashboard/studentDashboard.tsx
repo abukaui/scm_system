@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { type UserData, getComplaints, createComplaint, type ComplaintResponse, type ComplaintData } from '../../service/api';
+import toast from 'react-hot-toast';
 
 const StudentDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -50,10 +51,10 @@ const StudentDashboard: React.FC = () => {
             setComplaints([data.compliant, ...complaints]);
             setShowForm(false);
             setFormData({ title: '', description: '', category: 'Academic' });
-            alert("Complaint submitted successfully!");
+            toast.success("Complaint submitted successfully!");
         } catch (error) {
             console.error(error);
-            alert("Failed to submit complaint.");
+            toast.error("Failed to submit complaint.");
         }
     };
 

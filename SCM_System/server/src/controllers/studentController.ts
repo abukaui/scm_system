@@ -5,7 +5,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { pool } from "../db/config"; // Assuming this is your pool location
 import jwt from "jsonwebtoken";
-import { sendWelcomeEmail } from "../service/emailService";
+import { sendWelcomeEmail, sendPasswordResetEmail } from "../service/emailService";
 
 export const registerStudent = async (req: Request, res: Response) => {
     try {
@@ -98,8 +98,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
         const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (userResult.rows.length === 0) {
-            // Return 200 even if not found to prevent email enumeration
-            return res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
+            return res.status(404).json({ message: 'No account found with that email address.' });
         }
 
         const user = userResult.rows[0];
@@ -114,8 +113,6 @@ export const forgotPassword = async (req: Request, res: Response) => {
         // Use a frontend route for the reset link
         const resetLink = `http://localhost:5173/reset-password/${user.id}/${token}`;
 
-        // This implicitly imports sendPasswordResetEmail from emailService (will be added next)
-        const { sendPasswordResetEmail } = require('../service/emailService');
         await sendPasswordResetEmail(user.email, user.name, resetLink);
 
         res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });

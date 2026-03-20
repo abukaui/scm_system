@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { registerStudent, type UserData } from "../service/api";
+import toast from "react-hot-toast";
 
 const Register = () => {
     const navigate = useNavigate();
@@ -19,21 +20,20 @@ const Register = () => {
         e.preventDefault();
         
         if (formData.password !== confirmPassword) {
-            alert("Passwords do not match!");
+            toast.error("Passwords do not match!");
             return;
         }
 
         try {
             const result = await registerStudent(formData);
             console.log('Registration result:', result);
-            alert("Registration successful! Please login.");
+            toast.success("Registration successful! Please login.");
             navigate("/login");
         } catch (error) {
             console.error('Registration failed:', error);
-            alert("Registration failed. Please try again.");
+            toast.error("Registration failed. Please try again.");
         }
     }
-
     return (
         <div className="flex items-center justify-center min-h-screen bg-slate-50 p-4 font-sans relative">
             <Link 

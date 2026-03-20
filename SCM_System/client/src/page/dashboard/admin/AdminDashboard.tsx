@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminGetAllComplaints, adminGetAllStudents, adminUpdateComplaintStatus } from '../../../service/api';
+import toast from 'react-hot-toast';
 
 const COLORS = {
     Pending: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -79,9 +80,10 @@ const AdminDashboard: React.FC = () => {
             if (selectedComplaint && selectedComplaint.id === id) {
                 setSelectedComplaint({ ...selectedComplaint, status: newStatus });
             }
+            toast.success("Complaint status updated successfully!");
         } catch (error) {
             console.error("Failed to update status:", error);
-            alert("Failed to update status");
+            toast.error("Failed to update status");
         }
     };
 

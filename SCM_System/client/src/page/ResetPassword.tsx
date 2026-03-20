@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { resetPassword } from '../service/api';
+import toast from 'react-hot-toast';
 
 const ResetPassword = () => {
     const { id, token } = useParams<{ id: string, token: string }>();
@@ -19,17 +20,17 @@ const ResetPassword = () => {
         e.preventDefault();
 
         if (formData.password !== formData.confirmPassword) {
-            alert("Passwords do not match!");
+            toast.error("Passwords do not match!");
             return;
         }
 
         if (formData.password.length < 6) {
-            alert("Password must be at least 6 characters long.");
+            toast.error("Password must be at least 6 characters long.");
             return;
         }
 
         if (!id || !token) {
-            alert("Invalid password reset link.");
+            toast.error("Invalid password reset link.");
             return;
         }
 
@@ -39,7 +40,7 @@ const ResetPassword = () => {
             setIsSuccess(true);
         } catch (error: any) {
             console.error("Failed to reset password:", error);
-            alert(error.message || "Failed to reset password. The link might be expired or invalid.");
+            toast.error(error.message || "Failed to reset password. The link might be expired or invalid.");
         } finally {
             setIsLoading(false);
         }
