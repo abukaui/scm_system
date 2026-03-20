@@ -174,3 +174,40 @@ export const adminUpdateComplaintStatus = async (id: number, status: string, tok
         throw error;
     }
 };
+
+// Auth API additions
+export const requestPasswordReset = async (email: string) => {
+    try {
+        const response = await fetch(`${API}/forgot-password`, {
+            method: 'POST',
+            headers: {
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({ email })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || 'Failed to request reset link');
+        return result;
+    } catch (error) {
+        console.error('Error requesting password reset:', error);
+        throw error;
+    }
+}
+
+export const resetPassword = async (id: string, token: string, password: string) => {
+    try {
+        const response = await fetch(`${API}/reset-password/${id}/${token}`, {
+            method: 'POST',
+            headers: {
+                "content-type": "application/json"
+            },
+            body: JSON.stringify({ password })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || 'Failed to reset password');
+        return result;
+    } catch (error) {
+        console.error('Error resetting password:', error);
+        throw error;
+    }
+}

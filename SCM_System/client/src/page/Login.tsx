@@ -48,8 +48,8 @@ const Login = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-slate-50 p-4 relative">
-            <Link 
-                to="/" 
+            <Link
+                to="/"
                 className="absolute top-8 left-8 flex items-center space-x-2 text-slate-400 hover:text-blue-600 transition-colors font-bold text-xs uppercase tracking-widest group"
             >
                 <svg className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +85,7 @@ const Login = () => {
                     <div>
                         <div className="flex justify-between items-center mb-1.5">
                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
-                            <span className="text-[10px] font-bold text-blue-600 hover:underline cursor-pointer uppercase tracking-tight">Forgot?</span>
+                            <Link to="/forgot-password" data-testid="forgot-password-link" className="text-[10px] font-bold text-blue-600 hover:underline cursor-pointer uppercase tracking-tight">Forgot Password?</Link>
                         </div>
                         <div className="relative group/pass">
                             <input
@@ -96,7 +96,7 @@ const Login = () => {
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             />
-                            <button 
+                            <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-blue-600 transition-colors focus:outline-none"

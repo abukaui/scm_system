@@ -4,6 +4,8 @@ import Register from "./page/Register";
 import StudentDashboard from "./page/dashboard/studentDashboard";
 import AdminDashboard from "./page/dashboard/admin/AdminDashboard";
 import LandingPage from "./page/Landing";
+import ForgotPassword from "./page/ForgotPassword";
+import ResetPassword from "./page/ResetPassword";
 
 /** Redirects to /login if no token in localStorage */
 const ProtectedRoute = ({ element }: { element: React.ReactElement }) => {
@@ -27,6 +29,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<ProtectedRoute element={<StudentDashboard />} />} />
         <Route path="/admin" element={<AdminRoute element={<AdminDashboard />} />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:id/:token" element={<ResetPassword />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
