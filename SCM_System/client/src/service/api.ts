@@ -1,4 +1,4 @@
-const API = "http://localhost:3000/api";
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 export interface UserData {
     id?: number;

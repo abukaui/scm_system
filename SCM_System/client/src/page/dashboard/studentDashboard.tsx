@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { type UserData, getComplaints, createComplaint, type ComplaintResponse, type ComplaintData, updateUserProfile } from '../../service/api';
 import toast from 'react-hot-toast';
 
 const StudentDashboard: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const isComplaints = location.pathname === '/complaints';
     const [student, setStudent] = useState<UserData | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [complaints, setComplaints] = useState<ComplaintResponse[]>([]);
@@ -102,9 +104,15 @@ const StudentDashboard: React.FC = () => {
                 </div>
 
                 <nav className="flex-1 mt-8 px-4 space-y-2">
-                    <DashboardLink to="/dashboard" icon={<DashboardIcon />} active={true} collapsed={!sidebarOpen}>Overview</DashboardLink>
-                    <DashboardLink to="/complaints" icon={<ComplaintsIcon />} collapsed={!sidebarOpen}>My Complaints</DashboardLink>
-                    <DashboardLink to="#" icon={<ProfileIcon />} collapsed={!sidebarOpen}>Profile Settings</DashboardLink>
+                    <DashboardLink to="/dashboard" icon={<DashboardIcon />} active={!isComplaints} collapsed={!sidebarOpen}>Overview</DashboardLink>
+                    <DashboardLink to="/complaints" icon={<ComplaintsIcon />} active={isComplaints} collapsed={!sidebarOpen}>My Complaints</DashboardLink>
+                    <button
+                        onClick={() => setShowProfileModal(true)}
+                        className={`w-full flex items-center space-x-3 p-3.5 rounded-xl transition-all group text-blue-200 hover:bg-blue-800/50 hover:text-white`}
+                    >
+                        <span className="text-blue-400 group-hover:text-blue-100 transition-colors"><ProfileIcon /></span>
+                        {!sidebarOpen ? null : <span>Profile Settings</span>}
+                    </button>
                 </nav>
             </aside>
 
@@ -132,7 +140,7 @@ const StudentDashboard: React.FC = () => {
                             <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
                         </button>
                         <div className="relative">
-                            <button 
+                            <button
                                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                                 className="flex items-center space-x-3 pl-6 border-l border-gray-100 hover:bg-gray-50 rounded-lg p-2 transition-colors focus:outline-none"
                             >
@@ -273,11 +281,10 @@ const StudentDashboard: React.FC = () => {
                                                             <h5 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors uppercase text-xs tracking-tight">{c.title}</h5>
                                                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{c.category}</p>
                                                         </div>
-                                                        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${
-                                                            c.status === 'Resolved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
-                                                            c.status === 'In Progress' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
-                                                            'bg-amber-50 text-amber-600 border-amber-100'
-                                                        }`}>
+                                                        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${c.status === 'Resolved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                                c.status === 'In Progress' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                                    'bg-amber-50 text-amber-600 border-amber-100'
+                                                            }`}>
                                                             {c.status || 'Pending'}
                                                         </div>
                                                     </div>
@@ -308,7 +315,7 @@ const StudentDashboard: React.FC = () => {
                                     </div>
                                     <h2 className="text-xl font-bold text-gray-900">Update Profile</h2>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => setShowProfileModal(false)}
                                     className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
                                 >
@@ -330,7 +337,7 @@ const StudentDashboard: React.FC = () => {
                                         placeholder="John Doe"
                                     />
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Email Address</label>
                                     <input

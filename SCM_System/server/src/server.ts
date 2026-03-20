@@ -9,10 +9,13 @@ import cors from 'cors';
             dotenv.config();
 
             const app = express(); 
-            app.use(cors())
+            app.use(cors({
+                origin: process.env.ALLOWED_ORIGIN || '*',
+                credentials: true
+            }))
             app.use(express.json())
 
-            const Port = 3000;
+            const Port = process.env.PORT || 3000;
             app.use('/api' ,studentRoute)
             app.use('/api',compliantRoute)
             app.use('/api',adminRoute)
