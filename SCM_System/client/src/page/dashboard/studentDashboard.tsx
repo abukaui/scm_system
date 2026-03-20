@@ -282,8 +282,8 @@ const StudentDashboard: React.FC = () => {
                                                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{c.category}</p>
                                                         </div>
                                                         <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border ${c.status === 'Resolved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                                c.status === 'In Progress' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                                    'bg-amber-50 text-amber-600 border-amber-100'
+                                                            c.status === 'In Progress' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                                'bg-amber-50 text-amber-600 border-amber-100'
                                                             }`}>
                                                             {c.status || 'Pending'}
                                                         </div>
