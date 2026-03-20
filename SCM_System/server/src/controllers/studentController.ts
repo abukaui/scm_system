@@ -152,3 +152,40 @@ export const resetPassword = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+/** PUT /api/students/profile - Update the authenticated user's profile */
+export const updateProfile = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.id;
+        const { name, email, department, studentID } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        if (!name || !email) {
+            return res.status(400).json({ message: "Name and email are required" });
+        }
+
+        const result = await pool.query(
+            `UPDATE users 
+             SET name = $1, email = $2, department = $3, "studentID" = $4
+             WHERE id = $5 
+             RETURNING id, name, email, role, department, "studentID"`,
+            [name, email, department, studentID, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ 
+            message: "Profile updated successfully", 
+            user: result.rows[0] 
+        });
+
+    } catch (error) {
+        console.error("Profile update error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};

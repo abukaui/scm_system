@@ -211,3 +211,22 @@ export const resetPassword = async (id: string, token: string, password: string)
         throw error;
     }
 }
+
+export const updateUserProfile = async (data: UserData, token: string) => {
+    try {
+        const response = await fetch(`${API}/profile`, {
+            method: 'PUT',
+            headers: {
+                "content-type": "application/json",
+                "authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || 'Failed to update profile');
+        return result;
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        throw error;
+    }
+}

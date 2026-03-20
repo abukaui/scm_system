@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { adminGetAllComplaints, adminGetAllStudents, adminUpdateComplaintStatus } from '../../../service/api';
+import { adminGetAllComplaints, adminGetAllStudents, adminUpdateComplaintStatus, updateUserProfile, type UserData } from '../../../service/api';
 import toast from 'react-hot-toast';
 
 const COLORS = {
@@ -41,6 +41,10 @@ const AdminDashboard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [sortConfig, setSortConfig] = useState<{ key: keyof Complaint | 'date', direction: 'asc' | 'desc' } | null>(null);
     const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+    const [adminUser, setAdminUser] = useState<UserData | null>(null);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [profileForm, setProfileForm] = useState<UserData>({ email: '' });
 
     const token = localStorage.getItem('token') || "";
 
@@ -66,11 +70,33 @@ const AdminDashboard: React.FC = () => {
         fetchAllData();
     }, [token]);
 
+    useEffect(() => {
+        const userDataStr = localStorage.getItem('user');
+        if (userDataStr) {
+            const parsed = JSON.parse(userDataStr);
+            setAdminUser(parsed);
+            setProfileForm(parsed);
+        }
+    }, []);
+
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('role');
         navigate('/login');
+    };
+
+    const handleProfileUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const updatedUser = await updateUserProfile(profileForm, token);
+            setAdminUser(updatedUser.user);
+            localStorage.setItem('user', JSON.stringify(updatedUser.user));
+            toast.success("Profile updated successfully!");
+            setShowProfileModal(false);
+        } catch (error: any) {
+            toast.error(error.message || "Failed to update profile.");
+        }
     };
 
     const handleStatusUpdate = async (id: number, newStatus: string) => {
@@ -174,15 +200,6 @@ const AdminDashboard: React.FC = () => {
                     <NavLink icon={<ComplaintsIcon />} label="Complaints" active={activeNav === 'complaints'} collapsed={!sidebarOpen} onClick={() => { setActiveNav('complaints'); setSelectedStudentId(null); }} badge={stats.pending} />
                     <NavLink icon={<StudentsIcon />} label="Students" active={activeNav === 'students'} collapsed={!sidebarOpen} onClick={() => setActiveNav('students')} />
                 </nav>
-
-                <div className="p-3 border-t border-slate-800">
-                    <button onClick={handleLogout} className={`w-full flex items-center p-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all ${sidebarOpen ? 'space-x-3' : 'justify-center'}`}>
-                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        {sidebarOpen && <span className="text-sm font-medium">Sign Out</span>}
-                    </button>
-                </div>
             </aside>
 
             <div className="flex-1 flex flex-col min-w-0">
@@ -213,12 +230,44 @@ const AdminDashboard: React.FC = () => {
                             </svg>
                             {stats.pending > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>}
                         </button>
-                        <div className="flex items-center space-x-2 pl-3 border-l border-slate-200">
-                            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-md">A</div>
-                            <div className="hidden sm:block">
-                                <p className="text-xs font-bold text-slate-900">Admin</p>
-                                <p className="text-xs text-slate-400">Super Admin</p>
-                            </div>
+                        <div className="relative">
+                            <button 
+                                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                                className="flex items-center space-x-2 pl-3 border-l border-slate-200 hover:bg-slate-50 rounded-lg p-2 transition-colors focus:outline-none"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
+                                    {adminUser?.name ? adminUser.name.charAt(0).toUpperCase() : 'A'}
+                                </div>
+                                <div className="hidden sm:block text-left">
+                                    <p className="text-xs font-bold text-slate-900">{adminUser?.name || 'Admin'}</p>
+                                    <p className="text-xs text-slate-400 capitalize">{adminUser?.role || 'Super Admin'}</p>
+                                </div>
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            {showProfileMenu && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden z-50">
+                                    <button
+                                        onClick={() => { setShowProfileModal(true); setShowProfileMenu(false); }}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors flex items-center space-x-2"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        <span>Update Profile</span>
+                                    </button>
+                                    <div className="border-t border-slate-100"></div>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center space-x-2"
+                                    >
+                                        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                        <span>Sign Out</span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </header>
@@ -293,6 +342,76 @@ const AdminDashboard: React.FC = () => {
                         </div>
                         <div className="flex space-x-3">
                             <button onClick={() => setSelectedComplaint(null)} className="flex-1 py-2.5 border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors">Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Profile Update Modal */}
+            {showProfileModal && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4 transition-all duration-300">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all border border-slate-200">
+                        <div className="p-6 text-left">
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="flex items-center space-x-3 text-blue-600">
+                                    <div className="p-2 bg-blue-50 rounded-lg">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </div>
+                                    <h2 className="text-lg font-bold text-slate-900">Update Profile</h2>
+                                </div>
+                                <button 
+                                    onClick={() => setShowProfileModal(false)}
+                                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleProfileUpdate} className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-900"
+                                        value={profileForm.name}
+                                        onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                                        placeholder="Admin Name"
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-900"
+                                        value={profileForm.email}
+                                        onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                                        placeholder="admin@example.com"
+                                    />
+                                </div>
+
+                                <div className="flex gap-3 pt-4 border-t border-slate-100 mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowProfileModal(false)}
+                                        className="flex-1 px-4 py-2 text-slate-600 hover:bg-slate-100 font-bold text-sm rounded-lg transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 font-bold text-sm rounded-lg shadow-sm transition-colors"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>

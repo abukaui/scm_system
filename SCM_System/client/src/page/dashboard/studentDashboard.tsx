@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { type UserData, getComplaints, createComplaint, type ComplaintResponse, type ComplaintData } from '../../service/api';
+import { type UserData, getComplaints, createComplaint, type ComplaintResponse, type ComplaintData, updateUserProfile } from '../../service/api';
 import toast from 'react-hot-toast';
 
 const StudentDashboard: React.FC = () => {
@@ -11,6 +11,9 @@ const StudentDashboard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState<ComplaintData>({ title: '', description: '', category: 'Academic' });
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [profileForm, setProfileForm] = useState<UserData>({ email: '' });
 
 
     useEffect(() => {
@@ -23,7 +26,9 @@ const StudentDashboard: React.FC = () => {
         }
 
         if (userDataStr) {
-            setStudent(JSON.parse(userDataStr));
+            const parsed = JSON.parse(userDataStr);
+            setStudent(parsed);
+            setProfileForm(parsed);
         }
 
         fetchComplaints(token);
@@ -58,6 +63,22 @@ const StudentDashboard: React.FC = () => {
         }
     };
 
+    const handleProfileUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+            const updatedUser = await updateUserProfile(profileForm, token);
+            setStudent(updatedUser.user);
+            localStorage.setItem('user', JSON.stringify(updatedUser.user));
+            toast.success("Profile updated successfully!");
+            setShowProfileModal(false);
+        } catch (error: any) {
+            toast.error(error.message || "Failed to update profile.");
+        }
+    };
+
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -85,16 +106,6 @@ const StudentDashboard: React.FC = () => {
                     <DashboardLink to="/complaints" icon={<ComplaintsIcon />} collapsed={!sidebarOpen}>My Complaints</DashboardLink>
                     <DashboardLink to="#" icon={<ProfileIcon />} collapsed={!sidebarOpen}>Profile Settings</DashboardLink>
                 </nav>
-
-                <div className="p-4 border-t border-blue-800/50">
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center space-x-3 p-3 rounded-xl text-blue-200 hover:bg-blue-800 hover:text-white transition-all overflow-hidden"
-                    >
-                        <LogoutIcon />
-                        {sidebarOpen && <span className="font-medium">Sign Out</span>}
-                    </button>
-                </div>
             </aside>
 
             {/* Main Content */}
@@ -120,14 +131,40 @@ const StudentDashboard: React.FC = () => {
                             </svg>
                             <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
                         </button>
-                        <div className="flex items-center space-x-3 pl-6 border-l border-gray-100">
-                            <div className="text-right hidden sm:block">
-                                <p className="text-sm font-bold text-gray-900">{student.name}</p>
-                                <p className="text-xs text-gray-500 capitalize">{student.department} Dept</p>
-                            </div>
-                            <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-blue-50 flex items-center justify-center text-blue-600 font-bold">
-                                {student.name ? student.name.charAt(0).toUpperCase() : 'S'}
-                            </div>
+                        <div className="relative">
+                            <button 
+                                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                                className="flex items-center space-x-3 pl-6 border-l border-gray-100 hover:bg-gray-50 rounded-lg p-2 transition-colors focus:outline-none"
+                            >
+                                <div className="text-right hidden sm:block">
+                                    <p className="text-sm font-bold text-gray-900">{student.name}</p>
+                                    <p className="text-xs text-gray-500 capitalize">{student.department} Dept</p>
+                                </div>
+                                <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-blue-50 flex items-center justify-center text-blue-600 font-bold">
+                                    {student.name ? student.name.charAt(0).toUpperCase() : 'S'}
+                                </div>
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            {showProfileMenu && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg shadow-blue-900/10 border border-gray-100 overflow-hidden z-50">
+                                    <button
+                                        onClick={() => { setShowProfileModal(true); setShowProfileMenu(false); }}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors flex items-center space-x-2"
+                                    >
+                                        <ProfileIcon />
+                                        <span>Update Profile</span>
+                                    </button>
+                                    <div className="border-t border-gray-100"></div>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors flex items-center space-x-2"
+                                    >
+                                        <LogoutIcon />
+                                        <span>Sign Out</span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </header>
@@ -259,6 +296,100 @@ const StudentDashboard: React.FC = () => {
                     </div>
                 </div>
             </main>
+            {/* Profile Update Modal */}
+            {showProfileModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4 transition-all duration-300">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all border border-gray-100">
+                        <div className="p-8">
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="flex items-center space-x-3 text-blue-600">
+                                    <div className="p-2 bg-blue-50 rounded-xl">
+                                        <ProfileIcon />
+                                    </div>
+                                    <h2 className="text-xl font-bold text-gray-900">Update Profile</h2>
+                                </div>
+                                <button 
+                                    onClick={() => setShowProfileModal(false)}
+                                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleProfileUpdate} className="space-y-5">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Full Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-gray-900"
+                                        value={profileForm.name}
+                                        onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                                        placeholder="John Doe"
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Email Address</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-gray-900"
+                                        value={profileForm.email}
+                                        onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                                        placeholder="john@example.com"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Department</label>
+                                        <select
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-gray-900"
+                                            value={profileForm.department}
+                                            onChange={(e) => setProfileForm({ ...profileForm, department: e.target.value })}
+                                        >
+                                            <option value="">Select Dept</option>
+                                            <option value="Computer Science">Computer Science</option>
+                                            <option value="Engineering">Engineering</option>
+                                            <option value="Business">Business</option>
+                                            <option value="Arts">Arts</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Student ID</label>
+                                        <input
+                                            type="text"
+                                            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-gray-900"
+                                            value={profileForm.studentID}
+                                            onChange={(e) => setProfileForm({ ...profileForm, studentID: e.target.value })}
+                                            placeholder="e.g. STU123"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 pt-4 border-t border-gray-100 mt-6">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowProfileModal(false)}
+                                        className="flex-1 px-4 py-3 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 font-bold text-sm transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-sm shadow-md shadow-blue-600/20 transition-all transform active:scale-95"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

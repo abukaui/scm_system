@@ -97,3 +97,28 @@ export const getAllStudents = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+/** GET /api/admin/complaints/:id — get a single complaint with student info */
+export const getComplaintById = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const result = await pool.query(`
+            SELECT 
+                c.id, c.title, c.description, c.category, c.status, c.created_at,
+                u.name AS student_name, u.email AS student_email, u."studentID", u.department
+            FROM complaints c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.id = $1
+        `, [id]);
+        if (result.rows.length === 0) {
+            res.status(404).json({ message: "Complaint not found" });
+            return;
+        }
+        res.json({ complaint: result.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
