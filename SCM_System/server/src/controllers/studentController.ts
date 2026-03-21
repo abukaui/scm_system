@@ -23,8 +23,8 @@ export const registerStudent = async (req: Request, res: Response) => {
         const newStudent = result.rows[0];
 
         // 3. Send Welcome Email (async, don't block response)
-        sendWelcomeEmail(newStudent.email, newStudent.name).catch(err => {
-            console.error('Failed to send welcome email:', err);
+        sendWelcomeEmail(newStudent.email, newStudent.name).catch((err) => {
+            console.error(`Failed to send welcome email to ${newStudent.email}:`, err);
         });
 
         // 4. Return the result

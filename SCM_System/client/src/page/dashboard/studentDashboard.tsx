@@ -8,7 +8,7 @@ const StudentDashboard: React.FC = () => {
     const location = useLocation();
     const isComplaints = location.pathname === '/complaints';
     const [student, setStudent] = useState<UserData | null>(null);
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [complaints, setComplaints] = useState<ComplaintResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -35,6 +35,19 @@ const StudentDashboard: React.FC = () => {
 
         fetchComplaints(token);
     }, [navigate]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const syncSidebar = () => {
+            setSidebarOpen(window.innerWidth >= 1024);
+        };
+
+        syncSidebar();
+        window.addEventListener('resize', syncSidebar);
+
+        return () => window.removeEventListener('resize', syncSidebar);
+    }, []);
 
     const fetchComplaints = async (token: string) => {
         try {
@@ -91,16 +104,24 @@ const StudentDashboard: React.FC = () => {
     if (!student) return null;
 
     return (
-        <div className="min-h-screen bg-gray-50 flex font-sans">
+        <div className="relative min-h-screen bg-gray-50 font-sans lg:flex">
             {/* Sidebar */}
-            <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-blue-900 transition-all duration-300 ease-in-out flex flex-col shadow-xl z-20`}>
+            {sidebarOpen && (
+                <button
+                    type="button"
+                    aria-label="Close sidebar overlay"
+                    onClick={() => setSidebarOpen(false)}
+                    className="fixed inset-0 z-30 bg-slate-950/40 lg:hidden"
+                />
+            )}
+            <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-40 flex w-[85vw] max-w-64 flex-col bg-blue-900 shadow-xl transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${sidebarOpen ? 'lg:w-64' : 'lg:w-20'}`}>
                 <div className="p-6 flex items-center space-x-3 overflow-hidden whitespace-nowrap border-b border-blue-800/50">
                     <div className="w-10 h-10 bg-blue-600 rounded-xl flex-shrink-0 flex items-center justify-center text-white shadow-lg">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                     </div>
-                    <span className="text-xl font-bold text-white tracking-tight">Student<span className="text-blue-400">Hub</span></span>
+                    {sidebarOpen && <span className="text-xl font-bold text-white tracking-tight">Student<span className="text-blue-400">Hub</span></span>}
                 </div>
 
                 <nav className="flex-1 mt-8 px-4 space-y-2">
@@ -117,10 +138,10 @@ const StudentDashboard: React.FC = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col h-screen overflow-hidden">
+            <main className="flex min-h-screen flex-1 flex-col overflow-hidden">
                 {/* Header */}
-                <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-8 z-10">
-                    <div className="flex items-center space-x-4">
+                <header className="sticky top-0 z-20 flex min-h-20 flex-wrap items-center justify-between gap-4 border-b border-gray-100 bg-white px-4 py-4 sm:px-6 lg:px-8">
+                    <div className="flex min-w-0 items-center space-x-3 sm:space-x-4">
                         <button
                             onClick={() => setSidebarOpen(!sidebarOpen)}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500"
@@ -129,10 +150,12 @@ const StudentDashboard: React.FC = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
                             </svg>
                         </button>
-                        <h2 className="text-xl font-semibold text-gray-800">Dashboard Overview</h2>
+                        <h2 className="truncate text-lg font-semibold text-gray-800 sm:text-xl">
+                            {isComplaints ? 'My Complaints' : 'Dashboard Overview'}
+                        </h2>
                     </div>
 
-                    <div className="flex items-center space-x-6">
+                    <div className="flex w-full items-center justify-end gap-3 sm:w-auto sm:space-x-4 lg:space-x-6">
                         <button className="relative p-2 text-gray-400 hover:text-blue-600 transition-colors">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -142,7 +165,7 @@ const StudentDashboard: React.FC = () => {
                         <div className="relative">
                             <button
                                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                                className="flex items-center space-x-3 pl-6 border-l border-gray-100 hover:bg-gray-50 rounded-lg p-2 transition-colors focus:outline-none"
+                                className="flex items-center space-x-3 rounded-lg p-2 transition-colors focus:outline-none hover:bg-gray-50 sm:border-l sm:border-gray-100 sm:pl-4 lg:pl-6"
                             >
                                 <div className="text-right hidden sm:block">
                                     <p className="text-sm font-bold text-gray-900">{student.name}</p>
@@ -178,16 +201,16 @@ const StudentDashboard: React.FC = () => {
                 </header>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-y-auto p-8 space-y-8">
+                <div className="flex-1 overflow-y-auto space-y-6 p-4 sm:p-6 lg:space-y-8 lg:p-8">
                     {/* Welcome Section */}
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden">
+                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white shadow-lg sm:p-8">
                         <div className="relative z-10">
-                            <h3 className="text-2xl font-bold mb-2">Welcome back, {student.name}! 👋</h3>
-                            <p className="text-blue-100 max-w-xl">
-                                Here's what's happening with your complaints  Track and manage everything in one place.
+                            <h3 className="mb-2 text-xl font-bold sm:text-2xl">Welcome back, {student.name}! 👋</h3>
+                            <p className="max-w-xl text-sm text-blue-100 sm:text-base">
+                                Here's what's happening with your complaints. Track and manage everything in one place.
                             </p>
                         </div>
-                        <svg className="absolute right-0 bottom-0 w-64 h-64 text-white/10 -mr-16 -mb-16" fill="currentColor" viewBox="0 0 24 24">
+                        <svg className="absolute -bottom-16 -right-16 h-48 w-48 text-white/10 sm:h-64 sm:w-64" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99z" />
                         </svg>
                     </div>
@@ -203,7 +226,7 @@ const StudentDashboard: React.FC = () => {
                     {/* Main Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Profile Details */}
-                        <div className="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                        <div className="lg:col-span-1 bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8">
                             <h4 className="text-lg font-bold text-gray-900 mb-6 flex items-center space-x-2">
                                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -216,16 +239,16 @@ const StudentDashboard: React.FC = () => {
                                 <DetailItem label="Department" value={student.department || 'N/A'} />
                                 <DetailItem label="Student ID" value={student.studentID || 'N/A'} />
                             </div>
-                            <button className="w-full mt-8 py-3 bg-gray-50 text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-colors">
+                            <button onClick={() => setShowProfileModal(true)} className="w-full mt-8 py-3 bg-gray-50 text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-colors">
                                 Edit Profile
                             </button>
                         </div>
 
                         {/* Recent Activity or Form */}
-                        <div className="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                        <div className="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8">
                             {showForm ? (
                                 <div>
-                                    <div className="flex items-center justify-between mb-8">
+                                    <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                         <h4 className="text-lg font-bold text-gray-900">New Complaint</h4>
                                         <button onClick={() => setShowForm(false)} className="text-gray-500 hover:text-gray-700 font-medium">Cancel</button>
                                     </div>
@@ -252,7 +275,7 @@ const StudentDashboard: React.FC = () => {
                                 </div>
                             ) : (
                                 <div>
-                                    <div className="flex items-center justify-between mb-8">
+                                    <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                         <h4 className="text-lg font-bold text-gray-900">Recent Complaints</h4>
                                         <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-blue-50 text-blue-600 font-bold rounded-lg hover:bg-blue-100 transition-colors">New Complaint</button>
                                     </div>
@@ -276,7 +299,7 @@ const StudentDashboard: React.FC = () => {
                                         <div className="space-y-4">
                                             {complaints.map((c) => (
                                                 <div key={c.id} className="p-5 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all group">
-                                                    <div className="flex justify-between items-start mb-3">
+                                                    <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                                         <div>
                                                             <h5 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors uppercase text-xs tracking-tight">{c.title}</h5>
                                                             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{c.category}</p>
@@ -289,9 +312,9 @@ const StudentDashboard: React.FC = () => {
                                                         </div>
                                                     </div>
                                                     <p className="text-sm text-slate-600 mb-4 line-clamp-2 italic">"{c.description}"</p>
-                                                    <div className="flex justify-between items-center pt-3 border-t border-slate-50">
+                                                    <div className="flex flex-col gap-2 pt-3 border-t border-slate-50 sm:flex-row sm:items-center sm:justify-between">
                                                         <span className="text-[10px] text-slate-400 font-bold">{new Date(c.created_at).toLocaleDateString()}</span>
-                                                        <button className="text-[10px] font-black text-blue-600 hover:underline uppercase tracking-widest leading-none">View Details</button>
+                                                        <button className="text-[10px] font-black text-blue-600 hover:underline uppercase tracking-widest leading-none text-left sm:text-right">View Details</button>
                                                     </div>
                                                 </div>
                                             ))}
@@ -306,8 +329,8 @@ const StudentDashboard: React.FC = () => {
             {/* Profile Update Modal */}
             {showProfileModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4 transition-all duration-300">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all border border-gray-100">
-                        <div className="p-8">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto transform transition-all border border-gray-100">
+                        <div className="p-6 sm:p-8">
                             <div className="flex justify-between items-start mb-6">
                                 <div className="flex items-center space-x-3 text-blue-600">
                                     <div className="p-2 bg-blue-50 rounded-xl">
@@ -350,7 +373,7 @@ const StudentDashboard: React.FC = () => {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Department</label>
                                         <select
@@ -377,7 +400,7 @@ const StudentDashboard: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-3 pt-4 border-t border-gray-100 mt-6">
+                                <div className="flex flex-col gap-3 pt-4 border-t border-gray-100 mt-6 sm:flex-row">
                                     <button
                                         type="button"
                                         onClick={() => setShowProfileModal(false)}
