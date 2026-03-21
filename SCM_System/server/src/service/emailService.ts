@@ -109,16 +109,19 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log('Message sent: %s', info.messageId);
-
-        // Preview URL only available when sending through an Ethereal account
-        if (nodemailer.getTestMessageUrl(info)) {
-            console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-        }
+        console.log('✅ Welcome Email Sent Successfully:', {
+            messageId: info.messageId,
+            recipient: email,
+            response: info.response
+        });
 
         return true;
-    } catch (error) {
-        console.error('Error sending welcome email:', error);
+    } catch (error: any) {
+        console.error('❌ CRITICAL ERROR: sendWelcomeEmail failed!');
+        console.error('Error Name:', error.name);
+        console.error('Error Message:', error.message);
+        if (error.code) console.error('Error Code:', error.code);
+        if (error.command) console.error('SMTP Command:', error.command);
         return false;
     }
 };

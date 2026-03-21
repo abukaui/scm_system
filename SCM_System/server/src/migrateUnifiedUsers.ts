@@ -55,38 +55,57 @@ async function migrate() {
             console.log('Admins migrated.');
         }
 
-        // 4. Update Complaints table to use users.id
-        // We need to map studentid (from student table) to the new user.id (where role='student')
-        const complaintCheck = await pool.query(`
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_name = 'complaints'
+        // 4. Ensure Complaints Table exists and is updated
+        console.log('Checking "complaints" table...');
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS complaints (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER,
+                title VARCHAR(255) NOT NULL,
+                description TEXT NOT NULL,
+                category VARCHAR(100) NOT NULL DEFAULT 'Other',
+                status VARCHAR(50) NOT NULL DEFAULT 'Pending',
+                created_at TIMESTAMP DEFAULT NOW()
             )
         `);
-        if (complaintCheck.rows[0].exists) {
-            console.log('Updating "complaints" table to link to "users"...');
-            
-            // Add a temporary mapping column if needed, or just do a direct update if emails match
-            // Since we migrated by email, we can match by email.
-            
-            // First, add a new column for the user reference
-            await pool.query(`ALTER TABLE complaints ADD COLUMN IF NOT EXISTS user_id INTEGER`);
-            
-            // Update the user_id based on matching student email
-            // (Assumes students table still exists for joining, or we can use the old studentid to match)
-            // If students table is still there:
+
+        // Check for 'catagory' typo and rename if found
+        const catagoryCheck = await pool.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.columns 
+                WHERE table_name = 'complaints' AND column_name = 'catagory'
+            )
+        `);
+        if (catagoryCheck.rows[0].exists) {
+            await pool.query(`ALTER TABLE complaints RENAME COLUMN catagory TO category`);
+            console.log('Renamed "catagory" to "category".');
+        }
+
+        // Check for 'user_id' column
+        const userIdCheck = await pool.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.columns 
+                WHERE table_name = 'complaints' AND column_name = 'user_id'
+            )
+        `);
+        if (!userIdCheck.rows[0].exists) {
+            await pool.query(`ALTER TABLE complaints ADD COLUMN user_id INTEGER`);
+            console.log('Added "user_id" column to complaints.');
+        }
+
+        // Migrate link from old students table if it exists
+        const studentTableCheck = await pool.query(`
+            SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'students')
+        `);
+        if (studentTableCheck.rows[0].exists) {
+            console.log('Updating complaint ownership from legacy student data...');
             await pool.query(`
                 UPDATE complaints c
                 SET user_id = u.id
                 FROM students s
                 JOIN users u ON s.email = u.email
-                WHERE c.studentid = s.id AND u.role = 'student'
+                WHERE c.studentid = s.id AND u.role = 'student' AND c.user_id IS NULL
             `);
-
-            // If we want to be safe and students table might be gone later:
-            // But right now it's still there.
-            
-            console.log('Updated complaints with new user_id.');
         }
 
         console.log('\nMigration successful!');
