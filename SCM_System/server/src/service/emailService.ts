@@ -95,7 +95,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
                             </div>
 
                             <div style="text-align: center;">
-                                <a href="http://localhost:5173/login" class="btn">Explore My Dashboard</a>
+                                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login" class="btn">Explore My Dashboard</a>
                             </div>
                         </div>
                         <div class="footer">

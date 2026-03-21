@@ -111,7 +111,8 @@ export const forgotPassword = async (req: Request, res: Response) => {
         const token = jwt.sign(payload, secret, { expiresIn: '5m' });
 
         // Use a frontend route for the reset link
-        const resetLink = `http://localhost:5173/reset-password/${user.id}/${token}`;
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const resetLink = `${frontendUrl}/reset-password/${user.id}/${token}`;
 
         await sendPasswordResetEmail(user.email, user.name, resetLink);
 
