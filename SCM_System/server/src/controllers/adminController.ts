@@ -122,3 +122,32 @@ export const getComplaintById = async (req: Request, res: Response) => {
 };
 
 
+/** POST /api/admin/register */
+export const registerAdmin = async (req: Request, res: Response) => {
+    try {
+        const { name, email, password, adminSecret } = req.body;
+
+        // Security check: require a secret key from environment variables
+        const secretKey = process.env.ADMIN_SECRET_KEY || "SCM_ADMIN_SECRET_2026";
+        
+        if (adminSecret !== secretKey) {
+            res.status(401).json({ message: "Unauthorized: Invalid admin secret key" });
+            return;
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const result = await pool.query(
+            "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, 'admin') RETURNING id, name, email, role",
+            [name, email, hashedPassword]
+        );
+
+        res.status(201).json({ message: "Admin registered successfully", admin: result.rows[0] });
+    } catch (error: any) {
+        console.error(error);
+        if (error.code === '23505') {
+            res.status(409).json({ message: "Email already exists" });
+        } else {
+            res.status(500).json({ message: "Server error" });
+        }
+    }
+};

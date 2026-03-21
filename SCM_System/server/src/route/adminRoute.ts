@@ -1,11 +1,12 @@
 import express from "express";
-import { loginAdmin, getAllComplaints, updateComplaintStatus, getAllStudents } from "../controllers/adminController";
+import { loginAdmin, getAllComplaints, updateComplaintStatus, getAllStudents, registerAdmin } from "../controllers/adminController";
 import { adminAuthMiddleware } from "../middleware/adminAuthMiddleware";
 
 const router = express.Router();
 
 // Auth
 router.post("/admin/login", loginAdmin);
+router.post("/admin/register", registerAdmin);
 
 // Protected admin routes
 router.get("/admin/complaints", adminAuthMiddleware, getAllComplaints);

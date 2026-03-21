@@ -8,6 +8,7 @@ import LandingPage from "./page/Landing";
 import ForgotPassword from "./page/ForgotPassword";
 import ResetPassword from "./page/ResetPassword";
 import About from "./page/About";
+import AdminRegister from "./page/AdminRegister";
 
 /** Redirects to /login if no token in localStorage */
 const ProtectedRoute = ({ element }: { element: React.ReactElement }) => {
@@ -50,6 +51,7 @@ function App() {
           <Route path="/admin" element={<AdminRoute element={<AdminDashboard />} />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/about" element={<About />} />
+          <Route path="/admin/setup" element={<AdminRegister />} />
           <Route path="/reset-password/:id/:token" element={<ResetPassword />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
