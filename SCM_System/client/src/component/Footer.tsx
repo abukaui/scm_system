@@ -36,6 +36,7 @@ const Footer: React.FC = () => {
                             <li><Link to="/" className="hover:text-blue-500 transition-colors">Home</Link></li>
                             <li><a href="#features" className="hover:text-blue-500 transition-colors">Features</a></li>
                             <li><Link to="/about" className="hover:text-blue-500 transition-colors">About Us</Link></li>
+                            <li><Link to="/admin/setup" className="hover:text-blue-500 transition-colors text-xs text-gray-600">Admin Setup</Link></li>
                             <li><Link to="/login" className="hover:text-blue-500 transition-colors">Sign In</Link></li>
                         </ul>
                     </div>
