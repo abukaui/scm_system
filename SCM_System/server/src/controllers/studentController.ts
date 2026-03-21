@@ -38,9 +38,8 @@ export const registerStudent = async (req: Request, res: Response) => {
 
         // Postgres unique constraint violation code: 23505
         if (error.code === '23505') {
-            const field = error.constraint?.includes('email') ? 'Email' : 'Student ID';
             return res.status(409).json({
-                message: `${field} is already registered. Please use a different one.`
+                message: "This Email or Student ID is already registered. Please login or use a different one."
             });
         }
 
