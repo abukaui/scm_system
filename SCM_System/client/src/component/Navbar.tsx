@@ -42,7 +42,7 @@ const Navbar: React.FC = () => {
                 <div className="hidden md:flex items-center space-x-8">
                     <Link to="/" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Home</Link>
                     <a href="#features" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Features</a>
-                    <a href="#about" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">About</a>
+                    <Link to="/about" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">About</Link>
                     
                     {isLoggedIn ? (
                         <div className="flex items-center space-x-4">
@@ -87,7 +87,7 @@ const Navbar: React.FC = () => {
                 <div className="md:hidden bg-white border-t border-gray-100 py-4 px-6 space-y-4 shadow-xl">
                     <Link to="/" className="block text-gray-600 hover:text-blue-600 font-medium">Home</Link>
                     <a href="#features" className="block text-gray-600 hover:text-blue-600 font-medium">Features</a>
-                    <a href="#about" className="block text-gray-600 hover:text-blue-600 font-medium">About</a>
+                    <Link to="/about" className="block text-gray-600 hover:text-blue-600 font-medium">About</Link>
                     <div className="pt-4 border-t border-gray-100 flex flex-col space-y-4">
                         {isLoggedIn ? (
                             <>
