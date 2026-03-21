@@ -7,6 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "migrate": "node dist/migrateUnifiedUsers.js",
+    "seed-admin": "node dist/seedAdmin.js",
     "start": "node dist/server.js"
   },
   "dependencies": {
