@@ -18,6 +18,7 @@ const createTransporter = async () => {
 
     if (missingEnv.length > 0) {
         if (isProd) {
+            console.error('❌ CRITICAL: SMTP is not configured in production. Missing:', missingEnv.join(', '));
             throw new Error(`CRITICAL: SMTP is not configured in production. Missing: ${missingEnv.join(', ')}`);
         } else {
             console.warn(`⚠️ SMTP is not fully configured. Missing: ${missingEnv.join(', ')}`);
@@ -35,14 +36,26 @@ const createTransporter = async () => {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS,
             },
+            tls: {
+                // This allows the use of STARTTLS on port 587 in environments with strict cert chains
+                rejectUnauthorized: false
+            }
         });
 
+        if (isProd) console.log('🔄 Verifying SMTP transporter for production...');
         await transporter.verify();
+        if (isProd) console.log('✅ SMTP transporter verified successfully.');
         return transporter;
     } catch (error: any) {
-        if (isProd) throw error;
-        console.error('Failed to verify SMTP transporter:', error.message);
-        return null;
+        console.error('❌ Failed to verify SMTP transporter:', error.message);
+        if (error.code) console.error('SMTP Error Code:', error.code);
+        if (error.command) console.error('SMTP Error Command:', error.command);
+        
+        if (isProd) {
+            console.error('❌ CRITICAL: SMTP verification failed in production. Please check credentials and firewall settings.');
+            throw error;
+        }
+        return null; // Fallback to logger in dev
     }
 };
 
