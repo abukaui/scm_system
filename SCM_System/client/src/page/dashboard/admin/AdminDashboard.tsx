@@ -35,6 +35,7 @@ const AdminDashboard: React.FC = () => {
     const [activeNav, setActiveNav] = useState<NavItem>('overview');
     const [statusFilter, setStatusFilter] = useState<Status>('All');
     const [searchQuery, setSearchQuery] = useState('');
+    const [studentSearchQuery, setStudentSearchQuery] = useState('');
     const [complaints, setComplaints] = useState<Complaint[]>([]);
     const [students, setStudents] = useState<any[]>([]);
     const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
@@ -293,6 +294,8 @@ const AdminDashboard: React.FC = () => {
                         <StudentsPage 
                             students={students} 
                             complaints={complaints} 
+                            searchQuery={studentSearchQuery}
+                            setSearchQuery={setStudentSearchQuery}
                             onStudentClick={(id) => {
                                 setSelectedStudentId(id);
                                 setActiveNav('complaints');
@@ -656,47 +659,117 @@ const ComplaintsPage: React.FC<{
 const StudentsPage: React.FC<{ 
     students: any[], 
     complaints: Complaint[],
+    searchQuery: string,
+    setSearchQuery: (q: string) => void,
     onStudentClick: (id: string) => void
-}> = ({ students, complaints, onStudentClick }) => {
+}> = ({ students, complaints, searchQuery, setSearchQuery, onStudentClick }) => {
+    const filteredStudents = students.filter(s => 
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.studentID.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.department.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const departments = Array.from(new Set(students.map(s => s.department)));
+
     return (
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-            <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                <div>
-                    <h3 className="font-bold text-slate-900">Student Registry</h3>
-                    <p className="text-xs text-slate-400 font-medium">{students.length} students currently registered</p>
+        <div className="space-y-6">
+            {/* Student Stats & Search */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+                    <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
+                        <StudentsIcon />
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold text-slate-900">{students.length}</p>
+                        <p className="text-xs text-slate-500 font-medium whitespace-nowrap">Total Students</p>
+                    </div>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+                    <div className="p-3 bg-indigo-50 rounded-lg text-indigo-600">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p className="text-2xl font-bold text-slate-900">{departments.length}</p>
+                        <p className="text-xs text-slate-500 font-medium whitespace-nowrap">Departments</p>
+                    </div>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-center">
+                    <div className="relative">
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input 
+                            value={searchQuery} 
+                            onChange={e => setSearchQuery(e.target.value)} 
+                            type="text" 
+                            placeholder="Find student..." 
+                            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 transition-all" 
+                        />
+                    </div>
                 </div>
             </div>
-            <div className="divide-y divide-slate-100">
-                {students.map(s => {
-                    const studentComplaints = complaints.filter(c => c.studentID === s.studentID);
-                    return (
-                        <div key={s.id} onClick={() => onStudentClick(s.studentID)} className="px-6 py-5 flex items-center justify-between hover:bg-slate-50 cursor-pointer group transition-all">
-                            <div className="flex items-center space-x-4">
-                                <div className="w-11 h-11 rounded-xl bg-slate-100 group-hover:bg-blue-100 transition-colors flex items-center justify-center text-slate-400 group-hover:text-blue-600 font-bold text-lg">
-                                    {s.name.charAt(0)}
-                                </div>
-                                <div>
-                                    <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{s.name}</p>
-                                    <p className="text-xs text-slate-400 font-medium">{s.studentID} · {s.department}</p>
-                                    <p className="text-[10px] text-slate-300 tracking-wide mt-0.5 uppercase font-bold">{s.email}</p>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end space-y-1">
-                                <div className="flex items-center space-x-2">
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter ${studentComplaints.length > 0 ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-slate-100 text-slate-400 border border-slate-200'}`}>
-                                        {studentComplaints.length} Complaints
-                                    </span>
-                                    <svg className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </div>
-                                {studentComplaints.length > 0 && (
-                                    <p className="text-[10px] text-slate-400 font-medium italic">Latest: {new Date(studentComplaints[0].created_at).toLocaleDateString()}</p>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
+
+            {/* Student Table */}
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-left">
+                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Student ID</th>
+                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Full Name</th>
+                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Department</th>
+                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</th>
+                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Complaints</th>
+                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 italic">
+                            {filteredStudents.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                                        No students found matching "{searchQuery}"
+                                    </td>
+                                </tr>
+                            ) : filteredStudents.map(s => {
+                                const studentComplaints = complaints.filter(c => c.studentID === s.studentID);
+                                return (
+                                    <tr key={s.id} className="hover:bg-slate-50/80 transition-colors group">
+                                        <td className="px-6 py-4 font-mono text-xs text-slate-500">{s.studentID}</td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xs group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                                    {s.name.charAt(0)}
+                                                </div>
+                                                <span className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{s.name}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-slate-600 font-medium">{s.department}</td>
+                                        <td className="px-6 py-4 text-slate-400 group-hover:text-slate-600 transition-colors">{s.email}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${studentComplaints.length > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-400'}`}>
+                                                {studentComplaints.length} Records
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button 
+                                                onClick={() => onStudentClick(s.studentID)}
+                                                className="text-blue-600 font-bold text-xs hover:underline flex items-center justify-end space-x-1"
+                                            >
+                                                <span>View History</span>
+                                                <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
