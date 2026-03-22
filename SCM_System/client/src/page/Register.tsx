@@ -26,12 +26,13 @@ const Register = () => {
 
         try {
             const result = await registerStudent(formData);
-            console.log('Registration result:', result);
+            console.log('Registration successful:', result);
             toast.success("Registration successful! Please login.");
             navigate("/login");
-        } catch (error) {
-            console.error('Registration failed:', error);
-            toast.error("Registration failed. Please try again.");
+        } catch (error: any) {
+            console.error('Registration failed details:', error);
+            const errorMessage = error.message || "Registration failed. Please try again.";
+            toast.error(errorMessage);
         }
     }
     return (
@@ -64,6 +65,7 @@ const Register = () => {
                                 className="bg-slate-50 border border-slate-200 p-3.5 w-full rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium text-slate-900 placeholder:text-slate-300"
                                 placeholder="Your full name"
                                 required
+                                value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             />
                         </div>
@@ -75,6 +77,7 @@ const Register = () => {
                                 placeholder="name@college.edu"
                                 type="email"
                                 required
+                                value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             />
                         </div>
@@ -86,6 +89,7 @@ const Register = () => {
                                     className="bg-slate-50 border border-slate-200 p-3.5 w-full rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium text-slate-900 placeholder:text-slate-300 text-xs"
                                     placeholder="e.g. CS"
                                     required
+                                    value={formData.department}
                                     onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                                 />
                             </div>
@@ -95,6 +99,7 @@ const Register = () => {
                                     className="bg-slate-50 border border-slate-200 p-3.5 w-full rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium text-slate-900 placeholder:text-slate-300 text-xs"
                                     placeholder="ID Number"
                                     required
+                                    value={formData.studentID}
                                     onChange={(e) => setFormData({ ...formData, studentID: e.target.value })}
                                 />
                             </div>
@@ -108,6 +113,7 @@ const Register = () => {
                                     className="bg-slate-50 border border-slate-200 p-3.5 w-full rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium text-slate-900 placeholder:text-slate-300 pr-12"
                                     placeholder="Min. 8 characters"
                                     required
+                                    value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 />
                                 <button 

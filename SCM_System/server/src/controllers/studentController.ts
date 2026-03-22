@@ -8,13 +8,17 @@ export const registerStudent = async (req: Request, res: Response) => {
     try {
         const { name, email, department, studentID, password } = req.body;
 
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: "Name, email, and password are required" });
+        }
+
         // 1. Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // 2. Insert into Database (using the new users table)
         const result = await pool.query(
             'INSERT INTO users(name, email, department, "studentID", password, role) VALUES($1, $2, $3, $4, $5, $6) RETURNING id, name, email, department, "studentID", role',
-            [name, email, department, studentID, hashedPassword, 'student']
+            [name, email, department, studentID || null, hashedPassword, 'student']
         );
 
         const newStudent = result.rows[0];
@@ -34,7 +38,7 @@ export const registerStudent = async (req: Request, res: Response) => {
         });
 
     } catch (error: any) {
-        console.error(error);
+        console.error('Registration error details:', error);
 
         // Postgres unique constraint violation code: 23505
         if (error.code === '23505') {
@@ -43,7 +47,7 @@ export const registerStudent = async (req: Request, res: Response) => {
             });
         }
 
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: `Server error: ${error.message || 'Unknown error'}` });
     }
 }
 
