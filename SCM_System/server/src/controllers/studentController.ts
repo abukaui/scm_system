@@ -1,11 +1,8 @@
-
-
-
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { pool } from "../db/config"; // Assuming this is your pool location
 import jwt from "jsonwebtoken";
-import { sendWelcomeEmail, sendPasswordResetEmail } from "../service/emailService";
+import { sendWelcomeEmail, sendPasswordResetEmail, getFrontendUrl } from "../service/emailService";
 
 export const registerStudent = async (req: Request, res: Response) => {
     try {
@@ -109,9 +106,8 @@ export const forgotPassword = async (req: Request, res: Response) => {
         };
         const token = jwt.sign(payload, secret, { expiresIn: '5m' });
 
-        // Use a frontend route for the reset link
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        const resetLink = `${frontendUrl}/reset-password/${user.id}/${token}`;
+        // Use the centralized helper for the reset link
+        const resetLink = `${getFrontendUrl()}/reset-password/${user.id}/${token}`;
 
         await sendPasswordResetEmail(user.email, user.name, resetLink);
 

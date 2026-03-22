@@ -5,28 +5,45 @@ dotenv.config();
 
 const requiredSmtpEnv = ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'] as const;
 
+export const getFrontendUrl = () => {
+    return process.env.FRONTEND_URL || 'http://localhost:5173';
+};
+
 const getMissingSmtpEnv = () =>
     requiredSmtpEnv.filter((key) => !process.env[key]);
 
 const createTransporter = async () => {
     const missingEnv = getMissingSmtpEnv();
+    const isProd = process.env.NODE_ENV === 'production';
 
     if (missingEnv.length > 0) {
-        throw new Error(`SMTP is not configured. Missing: ${missingEnv.join(', ')}`);
+        if (isProd) {
+            throw new Error(`CRITICAL: SMTP is not configured in production. Missing: ${missingEnv.join(', ')}`);
+        } else {
+            console.warn(`⚠️ SMTP is not fully configured. Missing: ${missingEnv.join(', ')}`);
+            console.warn(`ℹ️ System will log emails to console instead of sending them.`);
+            return null; // Signals logger mode
+        }
     }
 
-    const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 587,
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
-    });
+    try {
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT) || 587,
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+            },
+        });
 
-    await transporter.verify();
-    return transporter;
+        await transporter.verify();
+        return transporter;
+    } catch (error: any) {
+        if (isProd) throw error;
+        console.error('Failed to verify SMTP transporter:', error.message);
+        return null;
+    }
 };
 
 export const sendWelcomeEmail = async (email: string, name: string) => {
@@ -34,7 +51,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
         const transporter = await createTransporter();
 
         const mailOptions = {
-            from: `"SCM System" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
+            from: `"SCM System" <${process.env.EMAIL_FROM || process.env.SMTP_USER || 'no-reply@scm.edu'}>`,
             to: email,
             subject: 'Welcome to SCM - Your Journey Starts Here!',
             html: `
@@ -82,7 +99,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
                                 </div>
                             </div>
                             <div style="text-align: center;">
-                                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login" class="btn">Explore My Dashboard</a>
+                                <a href="${getFrontendUrl()}/login" class="btn">Explore My Dashboard</a>
                             </div>
                         </div>
                         <div class="footer">
@@ -94,6 +111,15 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
                 </html>
             `,
         };
+
+        if (!transporter) {
+            console.log('--- DEVELOPMENT MODE: EMAIL LOG ---');
+            console.log('To:', mailOptions.to);
+            console.log('Subject:', mailOptions.subject);
+            console.log('Body:', mailOptions.html);
+            console.log('-----------------------------------');
+            return true;
+        }
 
         const info = await transporter.sendMail(mailOptions);
         console.log('Welcome email sent successfully:', {
@@ -118,7 +144,7 @@ export const sendPasswordResetEmail = async (email: string, name: string, resetL
         const transporter = await createTransporter();
 
         const mailOptions = {
-            from: `"SCM System Support" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
+            from: `"SCM System Support" <${process.env.EMAIL_FROM || process.env.SMTP_USER || 'support@scm.edu'}>`,
             to: email,
             subject: 'Reset Your SCM Password',
             html: `
@@ -162,6 +188,14 @@ export const sendPasswordResetEmail = async (email: string, name: string, resetL
                 </html>
             `,
         };
+
+        if (!transporter) {
+            console.log('--- DEVELOPMENT MODE: PASSWORD RESET LOG ---');
+            console.log('To:', mailOptions.to);
+            console.log('Reset Link:', resetLink);
+            console.log('--------------------------------------------');
+            return true;
+        }
 
         const info = await transporter.sendMail(mailOptions);
         console.log('Password reset email sent:', {
