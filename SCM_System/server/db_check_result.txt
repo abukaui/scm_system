@@ -1,0 +1,161 @@
+--- Table Schema (users) ---
+Schema:
+[
+  {
+    "column_name": "id",
+    "data_type": "integer",
+    "is_nullable": "NO",
+    "column_default": "nextval('users_id_seq'::regclass)"
+  },
+  {
+    "column_name": "name",
+    "data_type": "character varying",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "column_name": "email",
+    "data_type": "character varying",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "column_name": "password",
+    "data_type": "character varying",
+    "is_nullable": "NO",
+    "column_default": null
+  },
+  {
+    "column_name": "role",
+    "data_type": "character varying",
+    "is_nullable": "NO",
+    "column_default": "'student'::character varying"
+  },
+  {
+    "column_name": "studentID",
+    "data_type": "character varying",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "column_name": "department",
+    "data_type": "character varying",
+    "is_nullable": "YES",
+    "column_default": null
+  },
+  {
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone",
+    "is_nullable": "YES",
+    "column_default": "now()"
+  }
+]
+--- Constraints (users) ---
+Constraints:
+[
+  {
+    "conname": "users_pkey",
+    "pg_get_constraintdef": "PRIMARY KEY (id)"
+  },
+  {
+    "conname": "users_email_key",
+    "pg_get_constraintdef": "UNIQUE (email)"
+  }
+]
+--- Triggers (users) ---
+Triggers:
+[]
+--- Indexes (users) ---
+Indexes:
+[
+  {
+    "indexname": "users_pkey",
+    "indexdef": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)"
+  },
+  {
+    "indexname": "users_email_key",
+    "indexdef": "CREATE UNIQUE INDEX users_email_key ON public.users USING btree (email)"
+  }
+]
+--- All Users (id, name, email, studentID) ---
+Users:
+[
+  {
+    "id": 1,
+    "name": "Abuka",
+    "email": "abu@gmail.com",
+    "studentID": null
+  },
+  {
+    "id": 2,
+    "name": "bonsaa ",
+    "email": "bonsa@gmaii.com",
+    "studentID": null
+  },
+  {
+    "id": 3,
+    "name": "Ayaantu",
+    "email": "ayu@gmail.com",
+    "studentID": null
+  },
+  {
+    "id": 4,
+    "name": "muhamed Abdi",
+    "email": "mame@gmail.com",
+    "studentID": "4040"
+  },
+  {
+    "id": 5,
+    "name": "Ayanttu Abu",
+    "email": "adu@gmail.com",
+    "studentID": "4949"
+  },
+  {
+    "id": 6,
+    "name": "buruka Abrham",
+    "email": "bura@gmail.com",
+    "studentID": "4948"
+  },
+  {
+    "id": 7,
+    "name": "Super Admin",
+    "email": "admin@scm.edu",
+    "studentID": null
+  },
+  {
+    "id": 8,
+    "name": "Kefita Alemu ",
+    "email": "abeb9393@gmail.com",
+    "studentID": "3999"
+  },
+  {
+    "id": 9,
+    "name": "Atnafu bedatam ",
+    "email": "yibro291@gmail.com",
+    "studentID": "4933"
+  },
+  {
+    "id": 10,
+    "name": "Lelisa Hiylu",
+    "email": "aduy28683@gmail.com",
+    "studentID": "2020"
+  },
+  {
+    "id": 11,
+    "name": "Rediat Buzunh",
+    "email": "mabuka930@gmail.com",
+    "studentID": "1212"
+  },
+  {
+    "id": 12,
+    "name": "Abdi sali ",
+    "email": "abdisali853@gmail.com",
+    "studentID": "4041"
+  },
+  {
+    "id": 13,
+    "name": "Kalkidan Tulu",
+    "email": "yb101873@gmail.com",
+    "studentID": "1010"
+  }
+]
