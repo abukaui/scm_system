@@ -7,5 +7,10 @@
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "check_db.ts"
+  ]
 }
