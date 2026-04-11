@@ -11,15 +11,22 @@ const emailService_1 = require("../service/emailService");
 const registerStudent = async (req, res) => {
     try {
         const { name, email, department, studentID, password } = req.body;
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: "Name, email, and password are required" });
+        }
         // 1. Hash the password
         const hashedPassword = await bcrypt_1.default.hash(password, 10);
         // 2. Insert into Database (using the new users table)
-        const result = await config_1.pool.query('INSERT INTO users(name, email, department, "studentID", password, role) VALUES($1, $2, $3, $4, $5, $6) RETURNING id, name, email, department, "studentID", role', [name, email, department, studentID, hashedPassword, 'student']);
+        const result = await config_1.pool.query('INSERT INTO users(name, email, department, "studentID", password, role) VALUES($1, $2, $3, $4, $5, $6) RETURNING id, name, email, department, "studentID", role', [name, email, department, studentID || null, hashedPassword, 'student']);
         const newStudent = result.rows[0];
-        // 3. Send Welcome Email (async, don't block response)
-        (0, emailService_1.sendWelcomeEmail)(newStudent.email, newStudent.name).catch(err => {
-            console.error('Failed to send welcome email:', err);
-        });
+        // 3. Send Welcome Email (Await for serverless reliability)
+        try {
+            await (0, emailService_1.sendWelcomeEmail)(newStudent.email, newStudent.name);
+        }
+        catch (err) {
+            console.error(`Failed to send welcome email to ${newStudent.email}:`, err);
+            // We don't throw here to avoid failing the whole registration if only email fails
+        }
         // 4. Return the result
         res.status(201).json({
             message: 'Student registered successfully',
@@ -27,15 +34,25 @@ const registerStudent = async (req, res) => {
         });
     }
     catch (error) {
-        console.error(error);
+        console.error('Registration error details:', error);
         // Postgres unique constraint violation code: 23505
         if (error.code === '23505') {
-            const field = error.constraint?.includes('email') ? 'Email' : 'Student ID';
+            const detail = error.detail || "";
+            if (detail.includes('email')) {
+                return res.status(409).json({
+                    message: "This email address is already registered. Please login or use a different one."
+                });
+            }
+            if (detail.includes('studentID')) {
+                return res.status(409).json({
+                    message: "This Student ID is already registered. Please use a different one."
+                });
+            }
             return res.status(409).json({
-                message: `${field} is already registered. Please use a different one.`
+                message: "A user with this Email or Student ID already exists."
             });
         }
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: `Server error: ${error.message || 'Unknown error'}` });
     }
 };
 exports.registerStudent = registerStudent;
@@ -86,8 +103,8 @@ const forgotPassword = async (req, res) => {
             id: user.id
         };
         const token = jsonwebtoken_1.default.sign(payload, secret, { expiresIn: '5m' });
-        // Use a frontend route for the reset link
-        const resetLink = `http://localhost:5173/reset-password/${user.id}/${token}`;
+        // Use the centralized helper for the reset link
+        const resetLink = `${(0, emailService_1.getFrontendUrl)()}/reset-password/${user.id}/${token}`;
         await (0, emailService_1.sendPasswordResetEmail)(user.email, user.name, resetLink);
         res.status(200).json({ message: 'If that email is registered, a reset link will be sent.' });
     }

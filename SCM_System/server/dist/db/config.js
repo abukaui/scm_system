@@ -7,13 +7,15 @@ exports.pool = void 0;
 const pg_1 = require("pg");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-exports.pool = new pg_1.Pool({
-    user: process.env.DB_USER || "postgres",
-    password: process.env.DB_PASSWORD || "Abuka@8539",
-    host: process.env.DB_HOST || "localhost",
-    port: parseInt(process.env.DB_PORT || "5432"),
-    database: process.env.DB_NAME || "student_system"
-});
+exports.pool = process.env.DATABASE_URL
+    ? new pg_1.Pool({ connectionString: process.env.DATABASE_URL })
+    : new pg_1.Pool({
+        user: process.env.DB_USER || "postgres",
+        password: process.env.DB_PASSWORD || "Abuka@8539",
+        host: process.env.DB_HOST || "localhost",
+        port: parseInt(process.env.DB_PORT || "5432"),
+        database: process.env.DB_NAME || "student_system"
+    });
 exports.pool.on('connect', () => {
     console.log('Successfully connected to the database');
 });

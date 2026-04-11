@@ -11,6 +11,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "check_db.ts"
+    "debug_scripts"
   ]
 }
