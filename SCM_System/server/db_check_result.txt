@@ -117,12 +117,6 @@ Users:
     "studentID": "4948"
   },
   {
-    "id": 7,
-    "name": "Super Admin",
-    "email": "admin@scm.edu",
-    "studentID": null
-  },
-  {
     "id": 8,
     "name": "Kefita Alemu ",
     "email": "abeb9393@gmail.com",
@@ -157,5 +151,11 @@ Users:
     "name": "Kalkidan Tulu",
     "email": "yb101873@gmail.com",
     "studentID": "1010"
+  },
+  {
+    "id": 21,
+    "name": "Abu Mengistu",
+    "email": "abuy3832@gmail.com",
+    "studentID": null
   }
 ]

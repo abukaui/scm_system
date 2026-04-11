@@ -3,9 +3,9 @@ import bcrypt from 'bcrypt';
 
 async function seedAdmin() {
     try {
-        const name = 'Abu mengistu';
-        const email = 'aduy28683@gmail.com';
-        const password = 'Abu@Admin2026'; // Please change this after login!
+        const name = 'Abu Mengistu';
+        const email = 'abuy3832@gmail.com';
+        const password = 'abumengistu8539'; // Updated to new admin password
 
         console.log(`Seeding admin: ${name} (${email})...`);
 
